@@ -8,10 +8,10 @@ class Database {
   }
 
   connect(type = 'mongodb') {
-    if (true) {
-      mongoose.set('debug', true);
-      mongoose.set('debug', { color: true });
-    }
+    // if (true) {
+    //   mongoose.set('debug', true);
+    //   mongoose.set('debug', { color: true });
+    // }
     mongoose
       .connect(`mongodb://${host}:${port}/${name}`)
       .then(() => {
