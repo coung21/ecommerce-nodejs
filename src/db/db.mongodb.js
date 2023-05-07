@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { countConnect, checkOverload } = require('../helpers/check.connects');
-const {db: {port, host, name}} = require('../config/config.mongo')
+const {db: {port, host, name}} = require('../config/config')
 
 class Database {
   constructor() {
