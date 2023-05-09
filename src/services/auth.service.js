@@ -7,6 +7,8 @@ const { getData } = require('../utils/getData.utils')
 const { ROLES } = require('../constants/index');
 
 class AuthService {
+
+  //SignUp
   static async signUp(name, email, password) {
     try {
       const holderShop = await shopModel.findOne({ email: email }).lean();
@@ -62,6 +64,9 @@ class AuthService {
       };
     }
   }
+
+//Login
+  
 }
 
 module.exports = AuthService;
