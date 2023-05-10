@@ -5,17 +5,15 @@ const keyTokenService = require('./keyToken.service');
 const generatePairTokens = require('../utils/generateTokens.utils');
 const { getData } = require('../utils/getData.utils')
 const { ROLES } = require('../constants/index');
+const {ConflictRequest, BadRequest, IntervalServerErr} = require('../utils/errRequest.utils')
 
 class AuthService {
 
   //SignUp
   static async signUp(name, email, password) {
-    try {
       const holderShop = await shopModel.findOne({ email: email }).lean();
       if (holderShop) {
-        return {
-          message: 'This Email Is Already Used',
-        };
+        throw new ConflictRequest('This email is already used')
       }
       const passwordHash = await bcrypt.hash(password, 10);
       const newShop = await shopModel.create({
@@ -38,35 +36,55 @@ class AuthService {
             format: 'pem',
           },
         });
-        const publicKeyString = await keyTokenService.createKey({
-          id: newShop._id,
-          publicKey: publicKey,
-        });
-        if (!publicKeyString) {
-          return { message: 'Cannot generate your key' };
-        }
         //generate tokensPair
         const tokens = await generatePairTokens(
           { id: newShop._id, email: email },
-          publicKeyString,
           privateKey
-        );
-        return tokens
-          ? { shop: getData({fields: ['_id', 'name', 'email'], object: newShop }), tokens}
-          : { message: 'Cannot signup - Something went wrong!' };
+          );
+
+          await keyTokenService.createKey({
+            id: newShop._id,
+            publicKey: publicKey,
+            privateKey: privateKey,
+            refreshToken: tokens.refreshToken
+          });
+          return {...getData({fields: ['_id', 'name', 'email', 'status', 'roles'], object: newShop }), tokens}
+
 
       } else {
-        return { message: 'Cannot create shop accout - Something went wrong!' };
+        throw new IntervalServerErr('Cannot sign up - Something went wrongg')
       }
-    } catch (error) {
-      return {
-        error: error.message,
-      };
-    }
   }
 
 //Login
-  
+  static async logIn(email, password){
+    const foundShop = await shopModel.findOne({email: email})
+    if(!foundShop){
+      return new BadRequest('This account is not exist')
+    }
+    const passwordIsMatch = await bcrypt.compare(password, foundShop.password)
+    if(passwordIsMatch){
+      const {publicKey, privateKey} = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 4096,
+        publicKeyEncoding: {
+          type: 'pkcs1',
+          format: 'pem',
+        },
+        privateKeyEncoding: {
+          type: 'pkcs1',
+          format: 'pem'
+        }
+      })
+
+      const tokens = await generatePairTokens({id: foundShop._id, email: email}, privateKey)
+
+      await keyTokenService.createKey({id: foundShop._id, publicKey: publicKey, privateKey: privateKey, refreshToken: tokens.refreshToken})
+
+      return {...getData({fields: ['_id', 'name', 'status', 'roles'], object: foundShop}), tokens}
+    } else {
+      return new BadRequest('Incorrect password')
+    }
+  }
 }
 
 module.exports = AuthService;
