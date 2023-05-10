@@ -8,7 +8,7 @@ class BadRequest extends Error{
 class ForbiddenRequest extends Error{
   constructor(message){
     super(message)
-    this.status = 400
+    this.status = 403
   }
 }
 
@@ -19,7 +19,7 @@ class ConflictRequest extends Error{
   }
 }
 class UnauhthorizeRequest extends Error{
-  constructor(message){
+  constructor(message = 'Unauthorize'){
     super(message)
     this.status = 401
   }

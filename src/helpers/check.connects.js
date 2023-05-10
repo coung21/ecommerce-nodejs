@@ -3,10 +3,6 @@ const process = require('process')
 const os = require('os')
 const SECONDS = 20000
 
-//count number of connections with mongo
-const countConnect = () => {
-  console.log(`Number of connections::${mongoose.connections.length}`)
-}
 
 //check overload every 5s
 const checkOverload = () => {
@@ -25,6 +21,5 @@ const checkOverload = () => {
 }
 
 module.exports = {
-  countConnect,
   checkOverload
 }

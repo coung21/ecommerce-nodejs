@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { countConnect, checkOverload } = require('../helpers/check.connects');
+const { checkOverload } = require('../helpers/check.connects');
 const {db: {port, host, name}} = require('../config/config')
 
 class Database {
@@ -16,7 +16,6 @@ class Database {
       .connect(`mongodb://${host}:${port}/${name}`)
       .then(() => {
         console.log('connect to MongoDB successfully');
-        countConnect();
         checkOverload();
       })
       .catch((err) => {

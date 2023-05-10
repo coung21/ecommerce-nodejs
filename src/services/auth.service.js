@@ -5,7 +5,8 @@ const keyTokenService = require('./keyToken.service');
 const generatePairTokens = require('../utils/generateTokens.utils');
 const { getData } = require('../utils/getData.utils')
 const { ROLES } = require('../constants/index');
-const {ConflictRequest, BadRequest, IntervalServerErr} = require('../utils/errRequest.utils')
+const {ConflictRequest, BadRequest, IntervalServerErr, UnauhthorizeRequest} = require('../utils/errRequest.utils');
+const keytokenModel = require('../models/keytoken.model');
 
 class AuthService {
 
@@ -60,7 +61,7 @@ class AuthService {
   static async logIn(email, password){
     const foundShop = await shopModel.findOne({email: email})
     if(!foundShop){
-      return new BadRequest('This account is not exist')
+      throw new BadRequest('This account is not exist')
     }
     const passwordIsMatch = await bcrypt.compare(password, foundShop.password)
     if(passwordIsMatch){
@@ -77,13 +78,25 @@ class AuthService {
       })
 
       const tokens = await generatePairTokens({id: foundShop._id, email: email}, privateKey)
-
       await keyTokenService.createKey({id: foundShop._id, publicKey: publicKey, privateKey: privateKey, refreshToken: tokens.refreshToken})
 
       return {...getData({fields: ['_id', 'name', 'status', 'roles'], object: foundShop}), tokens}
     } else {
-      return new BadRequest('Incorrect password')
+      throw new BadRequest('Incorrect password')
     }
+  }
+
+  //LogOut
+  static async logOut(id){
+    if(!id) {
+      throw new UnauhthorizeRequest('Invalid request')
+    }
+    const shopKey = await keytokenModel.findOne({user: id})
+    if(!shopKey) {
+      throw new ConflictRequest('Something went wrong')
+    }
+    await keytokenModel.updateOne({user: shopKey.user}, {$push: {refreshTokenUsed: shopKey.refreshToken}})
+    return {message:'logout successfully'} 
   }
 }
 

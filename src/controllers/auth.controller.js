@@ -21,6 +21,16 @@ class AuthController {
       return errorResponse(res, error.message, error.status)
     }
   }
+
+  static async logOut(req, res){
+    try {
+      const id = req.id
+      const response = await AuthService.logOut(id)
+      return successResponse(res, null, 200, response.message)
+    } catch (error) {
+      return errorResponse(res, error.message, error.status)
+    }
+  }
 }
 
 module.exports = AuthController;
