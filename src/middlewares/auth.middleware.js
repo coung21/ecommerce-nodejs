@@ -7,7 +7,7 @@ async function authenticate(req, res, next){
     const token = req.headers.authorization.split(' ')[1]
     const userId = req.headers['x-client-id']
     if(!token || !userId){
-      return new UnauhthorizeRequest('Unauthorize')
+      throw new UnauhthorizeRequest('Unauthorize')
     }
     const shopToken = await keytokenModel.findOne({user: userId})
     const publicKey = shopToken.publicKey
@@ -15,7 +15,7 @@ async function authenticate(req, res, next){
     req.id = decode.id
     next()
   } catch (error) {
-    return new UnauhthorizeRequest('Invalid request')
+    throw new UnauhthorizeRequest('Invalid request')
   }
 }
 
