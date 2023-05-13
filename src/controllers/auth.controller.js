@@ -31,6 +31,15 @@ class AuthController {
       return errorResponse(res, error.message, error.status)
     }
   }
+
+  static async refreshTokenHanlder(req, res){
+    try {
+      const NewTokens = await AuthService.refreshTokenHandler(req.body.refreshToken)
+      return successResponse(res, NewTokens, 200)
+    } catch (error) {
+      return errorResponse(res, error.message, error.status);
+    }
+  }
 }
 
 module.exports = AuthController;

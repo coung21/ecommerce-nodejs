@@ -13,6 +13,14 @@ class keyTokenService{
   static async delKey(id){
     return await keyTokenModel.deleteOne({user: id})
   }
+
+  static async checkUsedToken(refreshToken){
+    return await keyTokenModel.findOne({refreshTokenUsed: refreshToken})
+  }
+
+  static async findByRefreshToken(refreshToken){
+    return await keyTokenModel.findOne({refreshToken: refreshToken})
+  }
 }
 
 module.exports = keyTokenService

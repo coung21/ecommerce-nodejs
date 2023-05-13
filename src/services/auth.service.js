@@ -10,9 +10,9 @@ const {
   BadRequest,
   IntervalServerErr,
   UnauhthorizeRequest,
+  ForbiddenRequest
 } = require('../utils/errRequest.utils');
-const keytokenModel = require('../models/keytoken.model');
-
+const jwt = require('jsonwebtoken')
 class AuthService {
   //SignUp
   static async signUp(name, email, password) {
@@ -115,6 +115,41 @@ class AuthService {
     }
     const delKey = await keyTokenService.delKey(id);
     return delKey;
+  }
+
+  static async refreshTokenHandler(refreshToken){
+    const foundToken = await keyTokenService.checkUsedToken(refreshToken)
+    if(foundToken){
+      const {id, email} = await jwt.verify(refreshToken, foundToken.publicKey)
+      await keyTokenService.delKey(id)
+      throw new ForbiddenRequest('Something went wrong - ReLogin')
+    }
+    
+    const holderToken = await keyTokenService.findByRefreshToken(refreshToken)
+    if(!holderToken){
+      throw new ConflictRequest('Shop is not registered')
+    }
+    const {id, email} = jwt.verify(refreshToken, holderToken.publicKey)
+    const foundShop = await shopModel.findOne({_id: id, email: email})
+    console.log(foundShop)
+    if (!foundShop) {
+      throw new ConflictRequest('Shop is not registered');
+    }
+    const tokens = await generatePairTokens({id: id, email: email}, holderToken.privateKey)
+
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken
+      },
+      $addToSet:{
+        refreshTokenUsed: refreshToken
+      }
+    })
+
+    return {
+      user: {id, email},
+      tokens
+    }
   }
 }
 module.exports = AuthService;
