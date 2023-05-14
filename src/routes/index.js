@@ -6,5 +6,6 @@ router.use(apiKeyMiddleware)
 
 //authentication route
 router.use('/v1/api', require('./api/auth'))
+router.use('/v1/api', require('./api/products'))
 
 module.exports = router

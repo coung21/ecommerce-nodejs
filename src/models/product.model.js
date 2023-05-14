@@ -21,19 +21,22 @@ const clothingSchema = new mongoose.Schema({
   brand: {type: String, require: true},
   size: {type: String, require: true},
   material: {type: String, require: true},
-})
+  product_shop: {type: mongoose.Schema.Types.ObjectId, require: true}
+}, {timestamps: true, collection: 'product_clothing'})
 
 const electronicSchema = new mongoose.Schema({
   brand: {type: String, require: true},
   model: {type: String, require: true},
   color: {type: String, require: true},
-})
+  product_shop: {type: mongoose.Schema.Types.ObjectId, require: true}
+}, {timestamps: true, collection: 'product_electronics'})
 
 const bookSchema = new mongoose.Schema({
   author: {type: String, require: true},
   release_date: {type: mongoose.Schema.Types.Date, require: true},
   language: {type: String, require: true},
-})
+  product_shop: {type: mongoose.Schema.Types.ObjectId, require: true}
+}, {timestamps: true, collection: 'product_books'})
 
 module.exports = {
   product: mongoose.model(DOCCUMENT, productSchema),

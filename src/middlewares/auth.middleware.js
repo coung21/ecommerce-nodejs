@@ -15,7 +15,7 @@ async function authenticate(req, res, next){
     req.id = decode.id
     next()
   } catch (error) {
-    throw new UnauhthorizeRequest('Invalid request')
+    return error
   }
 }
 
